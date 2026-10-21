@@ -9,7 +9,6 @@ class Janr(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
-    pages = models.SmallIntegerField
     genre = models.ForeignKey(Janr, on_delete=models.CASCADE, null=True)
 
     def __str__(self):

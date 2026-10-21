@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.forms import model_to_dict
-from .models import Janr, Book
+from api.models import Janr, Book
 
 class BookAPIView(APIView):
     def get(self, request: Request):
@@ -14,13 +14,12 @@ class BookAPIView(APIView):
                     "id": book.id,
                     "title": book.title,
                     "author": book.author,
-                    "pages": book.pages,
-                    "janr": book.genre.id
+                    "janr_id": book.genre.id,
                 }
             )
         return Response(books_list)
 
-    def post(self, request):
+    def post(self, request: Request):
         book = Book.objects.create(**request.data)
         return Response(model_to_dict(book))
 
@@ -36,6 +35,6 @@ class JanrAPIView(APIView):
                 }
             )
         return Response(janrlar_list)
-    def post(self, request):
+    def post(self, request: Request):
         janr = Janr.objects.create(**request.data)
         return Response(model_to_dict(janr))
