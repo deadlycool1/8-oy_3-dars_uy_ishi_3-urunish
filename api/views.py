@@ -1,40 +1,68 @@
+
 from rest_framework.views import APIView
-from rest_framework.request import Request
 from rest_framework.response import Response
-from django.forms import model_to_dict
-from api.models import Janr, Book
+from rest_framework import status
+from django.shortcuts import get_object_or_404
 
-class BookAPIView(APIView):
-    def get(self, request: Request):
-        books = Book.objects.all()
-        books_list = []
-        for book in books:
-            books_list.append(
-                {
-                    "id": book.id,
-                    "title": book.title,
-                    "author": book.author,
-                    "janr_id": book.genre.id,
-                }
-            )
-        return Response(books_list)
+from .models import Janr, Book
+from .serializers import JanrSerializer, BookSerializer
 
-    def post(self, request: Request):
-        book = Book.objects.create(**request.data)
-        return Response(model_to_dict(book))
 
 class JanrAPIView(APIView):
-    def get(self, request: Request):
+    def get(self, request, pk=None):
+        if pk is not None:
+            janr = get_object_or_404(Janr, pk=pk)
+            serializer = JanrSerializer(janr)
+            return Response(serializer.data)
+
         janrlar = Janr.objects.all()
-        janrlar_list = []
-        for janr in janrlar:
-            janrlar_list.append(
-                {
-                    "id": janr.id,
-                    "name": janr.name
-                }
-            )
-        return Response(janrlar_list)
-    def post(self, request: Request):
-        janr = Janr.objects.create(**request.data)
-        return Response(model_to_dict(janr))
+        serializer = JanrSerializer(janrlar, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = JanrSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, pk):
+        janr = get_object_or_404(Janr, pk=pk)
+        serializer = JanrSerializer(janr, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        janr = get_object_or_404(Janr, pk=pk)
+        janr.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class BookAPIView(APIView):
+    def get(self, request, pk=None):
+        if pk is not None:
+            book = get_object_or_404(Book, pk=pk)
+            serializer = BookSerializer(book)
+            return Response(serializer.data)
+
+        books = Book.objects.all()
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = BookSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def put(self, request, pk):
+        book = get_object_or_404(Book, pk=pk)
+        serializer = BookSerializer(book, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        book = get_object_or_404(Book, pk=pk)
+        book.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
